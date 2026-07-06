@@ -47,3 +47,7 @@ class NoteDraftResponse(BaseModel):
     folder: str = Field(default="", description="Имя папки для заметки.")
     title: str = Field(default="", description="Короткий заголовок заметки.")
     body: str = Field(default="", description="Текст заметки.")
+    update_of: str = Field(
+        default="",
+        description="Заголовок существующей заметки, которую нужно обновить, или пусто для новой.",
+    )

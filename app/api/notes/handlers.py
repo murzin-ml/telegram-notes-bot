@@ -18,7 +18,6 @@ from app.core.llm.schemas import AudioPart, ImagePart, ImageUrl, InputAudio, Mes
 from app.core.notes.service import NoteService
 from app.core.search.service import SearchService
 from app.infra.git.sync import GitSync
-from app.infra.vault.repository import VaultRepository
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -40,7 +39,6 @@ async def on_message(
     user_key: str,
     note_service: NoteService,
     search_service: SearchService,
-    vault: VaultRepository,
     git: GitSync,
 ) -> None:
     try:
@@ -48,10 +46,11 @@ async def on_message(
             await message.answer(await search_service.answer(user_key, message.text))
             return
 
-        draft = await note_service.build_draft(user_key, await _build_content(message))
-        saved = vault.write_note(user_key, draft.folder, draft.title, draft.body)
-        await git.commit(f"feat(notes): добавил «{saved.title}» в {saved.folder}")
-        await message.answer(f"✅ Записал в «{saved.folder}»: {saved.title}")
+        result = await note_service.capture(user_key, await _build_content(message))
+        action = "обновил" if result.updated else "добавил"
+        await git.commit(f"feat(notes): {action} «{result.title}» в {result.folder}")
+        reply = "Обновил" if result.updated else "Записал"
+        await message.answer(f"✅ {reply} в «{result.folder}»: {result.title}")
     except Exception:
         logger.exception("ошибка обработки сообщения")
         await message.answer(ERROR_REPLY)

@@ -22,7 +22,7 @@ class VaultRepository:
         folder_dir = self._user_root(user_key) / folder
         folder_dir.mkdir(parents=True, exist_ok=True)
         path = self._unique_path(folder_dir, self._safe_name(title))
-        path.write_text(f"# {title}\n\n{body}\n", encoding="utf-8")
+        path.write_text(self._render(title, body), encoding="utf-8")
         return SavedNote(folder=folder, title=title, path=str(path))
 
     def read_all(self, user_key: str) -> list[tuple[str, str]]:
@@ -34,8 +34,24 @@ class VaultRepository:
             for md in sorted(root.rglob("*.md"))
         ]
 
+    def find_note(self, user_key: str, title: str) -> Path | None:
+        root = self._user_root(user_key)
+        if not title or not root.exists():
+            return None
+        for md in root.rglob("*.md"):
+            if md.stem == title:
+                return md
+        return None
+
+    def overwrite(self, path: Path, title: str, body: str) -> None:
+        path.write_text(self._render(title, body), encoding="utf-8")
+
     def _user_root(self, user_key: str) -> Path:
         return self._base / user_key
+
+    @staticmethod
+    def _render(title: str, body: str) -> str:
+        return f"# {title}\n\n{body}\n"
 
     @staticmethod
     def _safe_name(title: str) -> str:

@@ -33,7 +33,6 @@ async def main() -> None:
 
     dispatcher["note_service"] = container.note_service()
     dispatcher["search_service"] = container.search_service()
-    dispatcher["vault"] = container.vault()
     dispatcher["git"] = container.git()
 
     await bot.set_my_commands(_COMMANDS)

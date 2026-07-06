@@ -14,7 +14,7 @@ def test_parse_invalid_returns_empty() -> None:
     parsed = NoteService._parse("это не json")
 
     assert parsed.folder == ""
-    assert parsed.title == ""
+    assert parsed.update_of == ""
 
 
 def test_write_and_read(tmp_path) -> None:
@@ -44,3 +44,15 @@ def test_users_are_separated(tmp_path) -> None:
 
     assert "Максим" in maksim_texts and "Валя" not in maksim_texts
     assert "Валя" in valya_texts and "Максим" not in valya_texts
+
+
+def test_find_and_overwrite(tmp_path) -> None:
+    vault = VaultRepository(str(tmp_path))
+    vault.write_note("maksim", "О себе", "Машина", "Hyundai")
+
+    found = vault.find_note("maksim", "Машина")
+    assert found is not None
+    vault.overwrite(found, "Машина", "Kia")
+
+    texts = " ".join(text for _, text in vault.read_all("maksim"))
+    assert "Kia" in texts and "Hyundai" not in texts

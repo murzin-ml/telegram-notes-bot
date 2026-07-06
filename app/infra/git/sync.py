@@ -12,14 +12,19 @@ class GitSync:
         self._push = push
 
     async def commit(self, message: str) -> None:
-        await self._run("git", "add", "-A")
-        code, _ = await self._run("git", "commit", "-m", message)
-        if code != GIT_OK:
-            return
-        if self._push:
-            push_code, err = await self._run("git", "push")
-            if push_code != GIT_OK:
-                logger.warning("git push не удался: %s", err.strip())
+        try:
+            await self._run("git", "add", "-A")
+            code, _ = await self._run("git", "commit", "-m", message)
+            if code != GIT_OK:
+                return
+            if self._push:
+                push_code, err = await self._run("git", "push")
+                if push_code != GIT_OK:
+                    logger.warning("git push не удался: %s", err.strip())
+        except FileNotFoundError:
+            logger.warning("git не найден — синхронизация пропущена")
+        except OSError:
+            logger.exception("git синхронизация не удалась")
 
     async def _run(self, *args: str) -> tuple[int, str]:
         proc = await asyncio.create_subprocess_exec(

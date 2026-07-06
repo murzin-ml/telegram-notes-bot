@@ -3,12 +3,13 @@ import logging
 from io import BytesIO
 
 from aiogram import Bot, F, Router
-from aiogram.filters import CommandStart
+from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 
 from app.api.notes.constants import (
     CAPTURE_HINT,
     ERROR_REPLY,
+    HELP_MESSAGE,
     IMAGE_MIME,
     START_MESSAGE,
     VOICE_FORMAT,
@@ -28,9 +29,15 @@ async def on_start(message: Message) -> None:
     await message.answer(START_MESSAGE)
 
 
+@router.message(Command("help"))
+async def on_help(message: Message) -> None:
+    await message.answer(HELP_MESSAGE)
+
+
 @router.message(F.text | F.voice | F.photo)
 async def on_message(
     message: Message,
+    user_key: str,
     note_service: NoteService,
     search_service: SearchService,
     vault: VaultRepository,
@@ -38,11 +45,11 @@ async def on_message(
 ) -> None:
     try:
         if _is_question(message):
-            await message.answer(await search_service.answer(message.text))
+            await message.answer(await search_service.answer(user_key, message.text))
             return
 
-        draft = await note_service.build_draft(await _build_content(message))
-        saved = vault.write_note(draft.folder, draft.title, draft.body)
+        draft = await note_service.build_draft(user_key, await _build_content(message))
+        saved = vault.write_note(user_key, draft.folder, draft.title, draft.body)
         await git.commit(f"feat(notes): добавил «{saved.title}» в {saved.folder}")
         await message.answer(f"✅ Записал в «{saved.folder}»: {saved.title}")
     except Exception:

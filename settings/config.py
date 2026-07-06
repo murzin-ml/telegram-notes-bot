@@ -8,8 +8,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     telegram_token: str = Field(alias="TELEGRAM_TOKEN")
-    telegram_proxy_url: str = Field(default="", alias="TELEGRAM_PROXY_URL")
     allowed_user_ids: str = Field(default="", alias="ALLOWED_USER_IDS")
+    user_vaults: str = Field(default="", alias="USER_VAULTS")
+    proxy_url: str = Field(default="", alias="PROXY_URL")
 
     openrouter_api_key: str = Field(alias="OPENROUTER_API_KEY")
     llm_base_url: str = Field(default="https://openrouter.ai/api/v1", alias="LLM_BASE_URL")
@@ -21,6 +22,15 @@ class Settings(BaseSettings):
     @property
     def allowed_ids(self) -> frozenset[int]:
         return frozenset(int(item) for item in self.allowed_user_ids.split(",") if item.strip())
+
+    @property
+    def vault_names(self) -> dict[int, str]:
+        names: dict[int, str] = {}
+        for pair in self.user_vaults.split(","):
+            if ":" in pair:
+                uid, name = pair.split(":", 1)
+                names[int(uid.strip())] = name.strip()
+        return names
 
 
 @lru_cache

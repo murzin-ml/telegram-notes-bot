@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    container_name: telegram-notes-bot
+    network_mode: host
+    env_file: .env
+    volumes:
+      - /root/vault:/vault
+    restart: unless-stopped

@@ -13,8 +13,8 @@ class NoteService:
         self._llm = llm
         self._vault = vault
 
-    async def build_draft(self, content: MessageContent) -> NoteDraft:
-        folders = self._vault.list_folders()
+    async def build_draft(self, user_key: str, content: MessageContent) -> NoteDraft:
+        folders = self._vault.list_folders(user_key)
         raw = await self._llm.complete(routing_system(folders, INBOX_FOLDER), content)
         response = self._parse(raw)
         allowed = set(folders) | {INBOX_FOLDER}

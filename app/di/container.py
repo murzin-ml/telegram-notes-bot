@@ -16,10 +16,11 @@ class Container(containers.DeclarativeContainer):
         api_key=settings.provided.openrouter_api_key,
         base_url=settings.provided.llm_base_url,
         model=settings.provided.llm_model,
+        proxy_url=settings.provided.proxy_url,
     )
     vault = providers.Singleton(
         VaultRepository,
-        vault_path=settings.provided.vault_path,
+        base_path=settings.provided.vault_path,
     )
     git = providers.Singleton(
         GitSync,

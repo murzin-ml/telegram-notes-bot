@@ -1,3 +1,2 @@
-MIN_KEYWORD_LEN = 3
-MAX_NOTES = 4
-NOT_FOUND_REPLY = "Не нашёл ничего по этому вопросу в заметках."
+MAX_CONTEXT_CHARS = 30000
+NOT_FOUND_REPLY = "У тебя пока нет заметок — сначала пришли мне что-нибудь запомнить."

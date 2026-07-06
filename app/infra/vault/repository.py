@@ -5,37 +5,37 @@ from app.infra.vault.constants import FALLBACK_NAME, INVALID_CHARS, MAX_TITLE_LE
 
 
 class VaultRepository:
-    def __init__(self, vault_path: str) -> None:
-        self._root = Path(vault_path)
+    def __init__(self, base_path: str) -> None:
+        self._base = Path(base_path)
 
-    def list_folders(self) -> list[str]:
-        if not self._root.exists():
+    def list_folders(self, user_key: str) -> list[str]:
+        root = self._user_root(user_key)
+        if not root.exists():
             return []
         return sorted(
             item.name
-            for item in self._root.iterdir()
+            for item in root.iterdir()
             if item.is_dir() and not item.name.startswith(".")
         )
 
-    def write_note(self, folder: str, title: str, body: str) -> SavedNote:
-        folder_dir = self._root / folder
+    def write_note(self, user_key: str, folder: str, title: str, body: str) -> SavedNote:
+        folder_dir = self._user_root(user_key) / folder
         folder_dir.mkdir(parents=True, exist_ok=True)
         path = self._unique_path(folder_dir, self._safe_name(title))
         path.write_text(f"# {title}\n\n{body}\n", encoding="utf-8")
         return SavedNote(folder=folder, title=title, path=str(path))
 
-    def search(self, keywords: list[str], limit: int) -> list[tuple[str, str]]:
-        if not keywords:
+    def read_all(self, user_key: str) -> list[tuple[str, str]]:
+        root = self._user_root(user_key)
+        if not root.exists():
             return []
-        scored: list[tuple[int, str, str]] = []
-        for md in self._root.rglob("*.md"):
-            text = md.read_text(encoding="utf-8", errors="ignore")
-            low = text.lower()
-            score = sum(low.count(keyword) for keyword in keywords)
-            if score:
-                scored.append((score, md.stem, text))
-        scored.sort(key=lambda item: item[0], reverse=True)
-        return [(title, text) for _, title, text in scored[:limit]]
+        return [
+            (md.stem, md.read_text(encoding="utf-8", errors="ignore"))
+            for md in sorted(root.rglob("*.md"))
+        ]
+
+    def _user_root(self, user_key: str) -> Path:
+        return self._base / user_key
 
     @staticmethod
     def _safe_name(title: str) -> str:

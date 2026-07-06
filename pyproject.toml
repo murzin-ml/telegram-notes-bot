@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "telegram-notes-bot"
+version = "0.1.0"
+description = "Telegram-бот для заметок: приём сообщений, раскладка по категориям и синхронизация с хранилищем."
+authors = ["Maksim Murzin <wow_murzin@mail.ru>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+aiogram = "^3.13.0"
+openai = "^1.51.0"
+dependency-injector = "^4.42.0"
+pydantic-settings = "^2.5.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

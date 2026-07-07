@@ -1,6 +1,5 @@
 import base64
 import logging
-from datetime import datetime
 from io import BytesIO
 
 from aiogram import Bot, F, Router
@@ -18,8 +17,10 @@ from app.api.notes.constants import (
     VOICE_FORMAT,
 )
 from app.api.notes.debounce import CaptureDebouncer
+from app.core.intent.constants import INTENT_QUESTION, INTENT_REMINDER
+from app.core.intent.service import IntentService
 from app.core.llm.schemas import AudioPart, ImagePart, ImageUrl, InputAudio, MessageContent, TextPart
-from app.core.reminders.constants import RECURRENCE_DAILY, RECURRENCE_WEEKLY, TRIGGER_PREFIXES
+from app.core.reminders.constants import RECURRENCE_DAILY, RECURRENCE_WEEKLY
 from app.core.reminders.dto import Reminder
 from app.core.reminders.service import ReminderService
 from app.core.search.service import SearchService
@@ -52,25 +53,34 @@ async def on_reminders(message: Message, user_key: str, reminder_service: Remind
 async def on_message(
     message: Message,
     user_key: str,
+    intent_service: IntentService,
     search_service: SearchService,
     reminder_service: ReminderService,
     debouncer: CaptureDebouncer,
 ) -> None:
     try:
-        low = (message.text or "").strip().lower()
-        if low and any(low.startswith(prefix) for prefix in TRIGGER_PREFIXES):
-            reminder = await reminder_service.create(user_key, message.chat.id, message.text)
+        if message.voice or message.photo:
+            debouncer.add(user_key, message.chat.id, await _build_content(message))
+            return
+
+        text = (message.text or "").strip()
+        if not text:
+            return
+
+        intent = await intent_service.classify(text)
+        if intent == INTENT_REMINDER:
+            reminder = await reminder_service.create(user_key, message.chat.id, text)
             if reminder is None:
                 await message.answer(REMINDER_FAIL)
             else:
                 await message.answer(f"⏰ Напомню: {reminder.text} — {_format_when(reminder)}")
             return
 
-        if _is_question(message):
-            await message.answer(await search_service.answer(user_key, message.text))
+        if intent == INTENT_QUESTION:
+            await message.answer(await search_service.answer(user_key, text))
             return
 
-        debouncer.add(user_key, message.chat.id, await _build_content(message))
+        debouncer.add(user_key, message.chat.id, text)
     except Exception:
         logger.exception("ошибка обработки сообщения")
         await message.answer(ERROR_REPLY)
@@ -83,10 +93,6 @@ def _format_when(reminder: Reminder) -> str:
     if reminder.recurrence == RECURRENCE_WEEKLY:
         return f"каждую неделю, {reminder.fire_at.strftime('%d.%m')} в {time}"
     return reminder.fire_at.strftime("%d.%m в %H:%M")
-
-
-def _is_question(message: Message) -> bool:
-    return bool(message.text) and message.text.strip().endswith("?")
 
 
 async def _build_content(message: Message) -> MessageContent:

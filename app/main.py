@@ -52,6 +52,7 @@ async def main() -> None:
 
     dispatcher.message.middleware(AccessMiddleware(settings.allowed_ids, settings.vault_names))
     register_routers(dispatcher)
+    dispatcher["intent_service"] = container.intent_service()
     dispatcher["search_service"] = container.search_service()
     dispatcher["reminder_service"] = reminder_service
     dispatcher["debouncer"] = debouncer

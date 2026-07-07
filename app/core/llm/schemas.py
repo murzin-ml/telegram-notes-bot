@@ -43,6 +43,10 @@ class ChatRequest(BaseModel):
     max_tokens: int | None = Field(default=None, description="Лимит токенов ответа.")
 
 
+class IntentResponse(BaseModel):
+    intent: str = Field(default="note", description="Намерение: note, question или reminder.")
+
+
 class NoteDraftResponse(BaseModel):
     folder: str = Field(default="", description="Имя папки для заметки.")
     title: str = Field(default="", description="Короткий заголовок заметки.")

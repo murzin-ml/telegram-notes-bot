@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 
+from app.core.intent.service import IntentService
 from app.core.llm.client import LLMClient
 from app.core.notes.service import NoteService
 from app.core.reminders.service import ReminderService
@@ -34,6 +35,7 @@ class Container(containers.DeclarativeContainer):
         db_path=settings.provided.reminders_db,
     )
 
+    intent_service = providers.Singleton(IntentService, llm=llm_client)
     note_service = providers.Singleton(NoteService, llm=llm_client, vault=vault)
     search_service = providers.Singleton(SearchService, vault=vault, llm=llm_client)
     reminder_service = providers.Singleton(

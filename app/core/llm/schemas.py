@@ -51,3 +51,9 @@ class NoteDraftResponse(BaseModel):
         default="",
         description="Заголовок существующей заметки, которую нужно обновить, или пусто для новой.",
     )
+
+
+class ReminderParseResponse(BaseModel):
+    text: str = Field(default="", description="Что напомнить, коротко.")
+    at: str = Field(default="", description="Первое срабатывание, ISO 8601 без таймзоны.")
+    recurrence: str = Field(default="none", description="Повтор: none, daily или weekly.")

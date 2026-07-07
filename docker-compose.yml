@@ -6,4 +6,5 @@ services:
     env_file: .env
     volumes:
       - /root/vault:/vault
+      - /root/bot-data:/data
     restart: unless-stopped

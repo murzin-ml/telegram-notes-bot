@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir \
     dependency-injector \
     pydantic-settings \
     aiohttp-socks \
-    httpx
+    httpx \
+    tzdata
 
 COPY app ./app
 COPY settings ./settings

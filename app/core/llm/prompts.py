@@ -20,6 +20,21 @@ def routing_system(folders: list[str], inbox: str, existing: str) -> str:
     )
 
 
+def reminder_parse_system(now_iso: str) -> str:
+    return (
+        "The user wants to set a reminder. The current local date and time is "
+        f"{now_iso} (this is the user's timezone). Extract what to remind about, the first fire "
+        "datetime, and the recurrence. Resolve relative times («завтра», «через час», «в пятницу», "
+        "«вечером») against the current time; «вечером» means 20:00, «утром» means 09:00 unless a time "
+        "is given. Recurrence is one of: none, daily, weekly (use daily for «каждый день»/«каждое "
+        "утро», weekly for «каждую неделю»/«по понедельникам»).\n"
+        "Reply with a single JSON object, without any explanation or markdown fences: "
+        '{"text": "<what to remind about, short, in Russian>", '
+        '"at": "<first fire datetime, ISO 8601, no timezone suffix>", '
+        '"recurrence": "none|daily|weekly"}'
+    )
+
+
 ANSWER_SYSTEM = (
     "You are the user's personal notes assistant. Answer the user's question using the notes below. "
     "Use any relevant detail from the notes, even a brief mention, and synthesize the best possible "

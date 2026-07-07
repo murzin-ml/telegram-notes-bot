@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     allowed_user_ids: str = Field(default="", alias="ALLOWED_USER_IDS")
     user_vaults: str = Field(default="", alias="USER_VAULTS")
     proxy_url: str = Field(default="", alias="PROXY_URL")
+    timezone: str = Field(default="Europe/Moscow", alias="TIMEZONE")
 
     openrouter_api_key: str = Field(alias="OPENROUTER_API_KEY")
     llm_base_url: str = Field(default="https://openrouter.ai/api/v1", alias="LLM_BASE_URL")
@@ -18,6 +19,7 @@ class Settings(BaseSettings):
 
     vault_path: str = Field(alias="VAULT_PATH")
     git_push: bool = Field(default=True, alias="GIT_PUSH")
+    reminders_db: str = Field(default="/data/reminders.db", alias="REMINDERS_DB")
 
     @property
     def allowed_ids(self) -> frozenset[int]:

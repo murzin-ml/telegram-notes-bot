@@ -2,8 +2,10 @@ from dependency_injector import containers, providers
 
 from app.core.llm.client import LLMClient
 from app.core.notes.service import NoteService
+from app.core.reminders.service import ReminderService
 from app.core.search.service import SearchService
 from app.infra.git.sync import GitSync
+from app.infra.reminders.storage import ReminderStorage
 from app.infra.vault.repository import VaultRepository
 from settings.config import Settings
 
@@ -27,5 +29,16 @@ class Container(containers.DeclarativeContainer):
         repo_path=settings.provided.vault_path,
         push=settings.provided.git_push,
     )
+    reminder_storage = providers.Singleton(
+        ReminderStorage,
+        db_path=settings.provided.reminders_db,
+    )
+
     note_service = providers.Singleton(NoteService, llm=llm_client, vault=vault)
     search_service = providers.Singleton(SearchService, vault=vault, llm=llm_client)
+    reminder_service = providers.Singleton(
+        ReminderService,
+        llm=llm_client,
+        storage=reminder_storage,
+        timezone=settings.provided.timezone,
+    )

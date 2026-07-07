@@ -47,13 +47,12 @@ class IntentResponse(BaseModel):
     intent: str = Field(default="note", description="Намерение: note, question или reminder.")
 
 
-class NoteDraftResponse(BaseModel):
+class NoteDraftHeader(BaseModel):
     folder: str = Field(default="", description="Имя папки для заметки.")
-    title: str = Field(default="", description="Короткий заголовок заметки.")
-    body: str = Field(default="", description="Текст заметки.")
+    title: str = Field(default="", description="Стабильный тематический заголовок.")
     update_of: str = Field(
         default="",
-        description="Заголовок существующей заметки, которую нужно обновить, или пусто для новой.",
+        description="Заголовок существующей заметки для обновления, или пусто для новой.",
     )
 
 

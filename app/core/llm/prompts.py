@@ -15,23 +15,22 @@ def routing_system(folders: list[str], inbox: str, existing: str) -> str:
     listed = "\n".join(f"- {name}" for name in folders)
     existing_block = existing or "(no notes yet)"
     return (
-        "You organize a person's personal notes. The user sends a fact as text, voice or photo. "
-        "Understand it, pick the single best-matching folder, and write the note body. "
-        "If the message is code, a diagram (e.g. Mermaid), structured data, a list, or exact text the user "
-        "will want back UNCHANGED, store it VERBATIM in the body — keep the exact characters and formatting, "
-        "do not rephrase, summarize or fix it. For an ordinary short fact, rephrase into a tidy Russian "
-        "sentence. For voice or photo, first recognize the content. "
-        "Choose a STABLE, TOPICAL title that names the subject, NOT a specific value — «Моя машина», «Мой "
-        "кот», «Схема обработки видео» — so later updates about the same subject reuse the same note.\n"
+        "You organize a person's personal notes. Decide the folder, a stable topical title, and whether "
+        "this updates an existing note; then output the note body.\n"
         f"Folders:\n{listed}\n"
         f"Existing notes (title: snippet):\n{existing_block}\n"
-        "If this concerns the SAME subject as one of the existing notes (even when the value changed), set "
-        "\"update_of\" to that note's exact title and write the FULL updated body. Otherwise leave "
-        "\"update_of\" empty and create a new note.\n"
-        f'If no folder fits, use "{inbox}". '
-        "Reply with a single JSON object, without any explanation or markdown fences: "
-        '{"folder": "<folder from the list>", "title": "<stable topical title>", "body": "<note text>", '
-        '"update_of": "<exact existing title or empty>"}'
+        "Title: STABLE and TOPICAL — name the subject, not a specific value («Моя машина», «Схема обработки "
+        "видео»), so later updates about the same subject reuse the same note. If the message concerns the "
+        "SAME subject as an existing note, set update_of to that note's exact title. "
+        "Body: if the message is code, a diagram (Mermaid), structured data, a list or exact text, the body "
+        "is that content COPIED VERBATIM — every character and line, no edits. For an ordinary fact, the "
+        "body is a tidy Russian sentence. "
+        f'If no folder fits, use "{inbox}".\n'
+        "Output EXACTLY this: one line of JSON, then a line containing only ===BODY===, then the body "
+        "(it may span many lines and contain any characters, including quotes and braces):\n"
+        '{"folder": "<folder>", "title": "<title>", "update_of": "<existing title or empty>"}\n'
+        "===BODY===\n"
+        "<the note body>"
     )
 
 

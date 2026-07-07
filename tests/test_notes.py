@@ -2,19 +2,31 @@ from app.core.notes.service import NoteService
 from app.infra.vault.repository import VaultRepository
 
 
-def test_parse_handles_json_fence() -> None:
-    parsed = NoteService._parse('```json\n{"folder": "Идеи", "title": "T", "body": "B"}\n```')
+def test_parse_splits_header_and_body() -> None:
+    raw = '{"folder": "Идеи", "title": "T", "update_of": ""}\n===BODY===\nтело заметки'
+    header, body = NoteService._parse(raw)
 
-    assert parsed.folder == "Идеи"
-    assert parsed.title == "T"
-    assert parsed.body == "B"
+    assert header.folder == "Идеи"
+    assert header.title == "T"
+    assert body == "тело заметки"
 
 
-def test_parse_invalid_returns_empty() -> None:
-    parsed = NoteService._parse("это не json")
+def test_parse_keeps_verbatim_body_with_quotes() -> None:
+    raw = (
+        '{"folder": "Знания", "title": "Схема", "update_of": ""}\n===BODY===\n'
+        'flowchart TD\n  D["узел"] --> E["другой"]'
+    )
+    header, body = NoteService._parse(raw)
 
-    assert parsed.folder == ""
-    assert parsed.update_of == ""
+    assert header.folder == "Знания"
+    assert 'D["узел"]' in body and "flowchart TD" in body
+
+
+def test_parse_invalid_header_still_keeps_body() -> None:
+    header, body = NoteService._parse("не json\n===BODY===\nтело")
+
+    assert header.folder == ""
+    assert body == "тело"
 
 
 def test_write_and_read(tmp_path) -> None:

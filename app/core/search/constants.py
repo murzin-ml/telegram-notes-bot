@@ -1,2 +1,2 @@
-MAX_CONTEXT_CHARS = 30000
+MAX_CONTEXT_CHARS = 200000
 NOT_FOUND_REPLY = "У тебя пока нет заметок — сначала пришли мне что-нибудь запомнить."

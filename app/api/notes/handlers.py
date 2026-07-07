@@ -8,6 +8,7 @@ from aiogram.types import Message
 
 from app.api.notes.constants import (
     CAPTURE_HINT,
+    DELETE_NONE,
     ERROR_REPLY,
     HELP_MESSAGE,
     IMAGE_MIME,
@@ -17,9 +18,10 @@ from app.api.notes.constants import (
     VOICE_FORMAT,
 )
 from app.api.notes.debounce import CaptureDebouncer
-from app.core.intent.constants import INTENT_QUESTION, INTENT_REMINDER
+from app.core.intent.constants import INTENT_DELETE, INTENT_QUESTION, INTENT_REMINDER
 from app.core.intent.service import IntentService
 from app.core.llm.schemas import AudioPart, ImagePart, ImageUrl, InputAudio, MessageContent, TextPart
+from app.core.notes.service import NoteService
 from app.core.reminders.constants import RECURRENCE_DAILY, RECURRENCE_WEEKLY
 from app.core.reminders.dto import Reminder
 from app.core.reminders.service import ReminderService
@@ -54,6 +56,7 @@ async def on_message(
     message: Message,
     user_key: str,
     intent_service: IntentService,
+    note_service: NoteService,
     search_service: SearchService,
     reminder_service: ReminderService,
     debouncer: CaptureDebouncer,
@@ -74,6 +77,14 @@ async def on_message(
                 await message.answer(REMINDER_FAIL)
             else:
                 await message.answer(f"⏰ Напомню: {reminder.text} — {_format_when(reminder)}")
+            return
+
+        if intent == INTENT_DELETE:
+            deleted = await note_service.forget(user_key, text)
+            if deleted:
+                await message.answer("🗑 Удалил: " + ", ".join(deleted))
+            else:
+                await message.answer(DELETE_NONE)
             return
 
         if intent == INTENT_QUESTION:

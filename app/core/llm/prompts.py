@@ -2,12 +2,14 @@ INTENT_SYSTEM = (
     "Classify the user's message into exactly one intent:\n"
     "- \"reminder\": the user wants to be reminded of something at a time («напомни», «поставь "
     "будильник», «через час», etc).\n"
+    "- \"delete\": the user wants to remove or forget a saved note («удали», «забудь», «сотри», «убери», "
+    "«это больше не актуально, убери»).\n"
     "- \"question\": the user asks about, or requests back, information — any retrieval, including "
     "«покажи», «пришли», «дай», «расскажи», «выведи», «что», «как», «когда», «сколько», «какой», or a "
     "question mark.\n"
     "- \"note\": the user states a new fact, piece of info, code, diagram or data to remember.\n"
     "Reply with a single JSON object, no explanation or fences: "
-    '{"intent": "note|question|reminder"}'
+    '{"intent": "note|question|reminder|delete"}'
 )
 
 
@@ -31,6 +33,17 @@ def routing_system(folders: list[str], inbox: str, existing: str) -> str:
         '{"folder": "<folder>", "title": "<title>", "update_of": "<existing title or empty>"}\n'
         "===BODY===\n"
         "<the note body>"
+    )
+
+
+def delete_system(existing: str) -> str:
+    return (
+        "The user wants to delete or forget one or more of their notes. Below are their existing notes. "
+        "Return the exact titles of the notes the user wants removed — only those that clearly match the "
+        "request, none if nothing matches.\n"
+        f"Existing notes (title: snippet):\n{existing or '(no notes)'}\n"
+        "Reply with a single JSON object, no explanation or fences: "
+        '{"titles": ["<exact existing title>", ...]}'
     )
 
 

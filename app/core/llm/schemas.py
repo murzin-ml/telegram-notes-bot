@@ -60,3 +60,7 @@ class ReminderParseResponse(BaseModel):
     text: str = Field(default="", description="Что напомнить, коротко.")
     at: str = Field(default="", description="Первое срабатывание, ISO 8601 без таймзоны.")
     recurrence: str = Field(default="none", description="Повтор: none, daily или weekly.")
+
+
+class DeleteResponse(BaseModel):
+    titles: list[str] = Field(default_factory=list, description="Заголовки заметок для удаления.")

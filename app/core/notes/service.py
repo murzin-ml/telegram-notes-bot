@@ -1,8 +1,8 @@
 from pydantic import ValidationError
 
 from app.core.llm.client import LLMClient
-from app.core.llm.prompts import routing_system
-from app.core.llm.schemas import MessageContent, NoteDraftHeader
+from app.core.llm.prompts import delete_system, routing_system
+from app.core.llm.schemas import DeleteResponse, MessageContent, NoteDraftHeader
 from app.core.notes.constants import (
     BODY_SEPARATOR,
     DEFAULT_TITLE,
@@ -34,6 +34,15 @@ class NoteService:
         saved = self._vault.write_note(user_key, folder, title, body)
         return CaptureResult(folder=saved.folder, title=saved.title, updated=False)
 
+    async def forget(self, user_key: str, request: str) -> list[str]:
+        raw = await self._llm.complete(delete_system(self._existing(user_key)), request)
+        deleted: list[str] = []
+        for title in self._parse_delete(raw).titles:
+            clean = title.strip()
+            if clean and self._vault.delete_note(user_key, clean):
+                deleted.append(clean)
+        return deleted
+
     def _existing(self, user_key: str) -> str:
         return "\n".join(
             f"- {title}: {text.strip()[:SNIPPET_LEN]}"
@@ -50,3 +59,11 @@ class NoteService:
         except ValidationError:
             header = NoteDraftHeader()
         return header, body
+
+    @staticmethod
+    def _parse_delete(raw: str) -> DeleteResponse:
+        cleaned = JSON_FENCE.sub("", raw).strip()
+        try:
+            return DeleteResponse.model_validate_json(cleaned)
+        except ValidationError:
+            return DeleteResponse()

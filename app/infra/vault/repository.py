@@ -26,25 +26,34 @@ class VaultRepository:
         return SavedNote(folder=folder, title=title, path=str(path))
 
     def read_all(self, user_key: str) -> list[tuple[str, str]]:
-        root = self._user_root(user_key)
-        if not root.exists():
-            return []
         return [
             (md.stem, md.read_text(encoding="utf-8", errors="ignore"))
-            for md in sorted(root.rglob("*.md"))
+            for md in self._notes(user_key)
         ]
 
     def find_note(self, user_key: str, title: str) -> Path | None:
-        root = self._user_root(user_key)
-        if not title or not root.exists():
+        if not title:
             return None
-        for md in root.rglob("*.md"):
+        for md in self._notes(user_key):
             if md.stem == title:
                 return md
         return None
 
     def overwrite(self, path: Path, title: str, body: str) -> None:
         path.write_text(self._render(title, body), encoding="utf-8")
+
+    def delete_note(self, user_key: str, title: str) -> bool:
+        note = self.find_note(user_key, title)
+        if note is None:
+            return False
+        note.unlink()
+        return True
+
+    def _notes(self, user_key: str) -> list[Path]:
+        root = self._user_root(user_key)
+        if not root.exists():
+            return []
+        return sorted(md for md in root.rglob("*.md") if not md.name.startswith("."))
 
     def _user_root(self, user_key: str) -> Path:
         return self._base / user_key

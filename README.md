@@ -1,39 +1,39 @@
 # telegram-notes-bot
 
-Telegram-бот для заметок: принимает сообщения (текст, голос, фото) от разрешённых
-пользователей, раскладывает их по папкам в хранилище [Obsidian](https://obsidian.md)
-и синхронизирует с git. Умеет искать по заметкам и отвечать на вопросы.
+A Telegram bot for note-taking: it accepts messages (text, voice, photos) from
+whitelisted users, files them into folders in an [Obsidian](https://obsidian.md)
+vault and syncs with git. It can search across notes and answer questions.
 
-## О проекте
+## About
 
-- **Модель:** `google/gemini-2.5-flash-lite` через [OpenRouter](https://openrouter.ai)
-  (OpenAI-совместимый API) — одна модель на текст, аудио и изображения.
-- **Хранилище:** git-репозиторий с `.md`-файлами (клон Obsidian-vault). Папки берутся динамически.
-- **Доступ:** whitelist по Telegram `user_id`.
-- **Telegram** ходит через SOCKS/HTTP-прокси (`TELEGRAM_PROXY_URL`), OpenRouter — напрямую.
+- **Model:** `google/gemini-2.5-flash-lite` via [OpenRouter](https://openrouter.ai)
+  (OpenAI-compatible API) — a single model for text, audio and images.
+- **Storage:** a git repository of `.md` files (a clone of an Obsidian vault). Folders are discovered dynamically.
+- **Access:** whitelist by Telegram `user_id`.
+- **Telegram** is reached through a SOCKS/HTTP proxy (`TELEGRAM_PROXY_URL`); OpenRouter is called directly.
 
-## Стек
+## Stack
 
 - Python 3.12+
 - **aiogram** (Telegram Bot API)
-- **openai** SDK (с `base_url` OpenRouter)
+- **openai** SDK (with an OpenRouter `base_url`)
 - **dependency-injector** (DI)
 - Poetry, pytest
 
-## Запуск
+## Running
 
 ```bash
-cp .env.example .env      # заполнить токены, user_id, VAULT_PATH
+cp .env.example .env      # fill in tokens, user_id, VAULT_PATH
 poetry install
 poetry run python -m app.main
 ```
 
-## Архитектура
+## Architecture
 
 Feature-sliced clean:
 
-- `app/api/` — слой Telegram (роутеры, хендлеры, middleware доступа).
-- `app/core/` — бизнес-логика по доменам (`notes`, `search`, `llm`).
-- `app/infra/` — инфраструктура (`vault` — файлы, `git` — синхронизация).
-- `app/di/` — DI-контейнер.
-- `settings/` — конфигурация (pydantic-settings).
+- `app/api/` — Telegram layer (routers, handlers, access middleware).
+- `app/core/` — business logic by domain (`notes`, `search`, `llm`).
+- `app/infra/` — infrastructure (`vault` — files, `git` — synchronisation).
+- `app/di/` — DI container.
+- `settings/` — configuration (pydantic-settings).
